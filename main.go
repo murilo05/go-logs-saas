@@ -23,8 +23,8 @@ func main() {
 	logger := zap.Sugar()
 	logger.Info("Starting app: ", config.App.Name, " env: ", config.App.Env)
 
-	logSvc := usecase.NewLogService(logger)
-	handler := http.NewHandler(logSvc)
+	ingestUseCase := usecase.NewIngestUseCase(logger)
+	handler := http.NewHandler(ingestUseCase, logger)
 
 	router := http.NewRouter(config, *handler, logger)
 
@@ -38,5 +38,4 @@ func main() {
 	// Dependency injection
 	//database := postgres.NewDatabase(ctx, config.DB, logger)
 	//aws := aws.NewAWS(ctx, logger)
-
 }
