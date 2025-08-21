@@ -38,7 +38,6 @@ func NewRouter(config *config.Cfg, handler Handler, logger *zap.SugaredLogger) *
 			logsHandler := logs.Group("/")
 			{
 				logsHandler.POST("/", handler.IngestLog)
-				logsHandler.GET("/", handler.SearchLog)
 				logsHandler.GET("/:id", handler.SearchLogById)
 			}
 		}

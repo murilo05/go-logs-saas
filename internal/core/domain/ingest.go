@@ -1,6 +1,7 @@
 package domain
 
 type Ingest struct {
+	ID      string
 	APIKey  string
 	AppID   string
 	Level   string
@@ -11,4 +12,5 @@ type Ingest struct {
 type IngestOutput struct {
 	ID     string
 	Status string
+	Log    Ingest
 }

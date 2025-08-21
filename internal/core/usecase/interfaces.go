@@ -6,5 +6,6 @@ import (
 )
 
 type IngestUseCase interface {
-	Ingest(context.Context, domain.Ingest) (domain.IngestOutput, error)
+	Ingest(ctx context.Context, ingest domain.Ingest) (domain.IngestOutput, error)
+	Search(ctx context.Context, id string) (domain.IngestOutput, error)
 }

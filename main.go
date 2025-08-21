@@ -5,6 +5,7 @@ import (
 	"go-log-saas/internal/adapter/config"
 	http "go-log-saas/internal/adapter/http"
 	"go-log-saas/internal/core/usecase"
+	"go-log-saas/internal/repository"
 	"log"
 	"os"
 
@@ -23,7 +24,8 @@ func main() {
 	logger := zap.Sugar()
 	logger.Info("Starting app: ", config.App.Name, " env: ", config.App.Env)
 
-	ingestUseCase := usecase.NewIngestUseCase(logger)
+	ingestRepository := repository.NewRepository(logger)
+	ingestUseCase := usecase.NewIngestUseCase(logger, ingestRepository)
 	handler := http.NewHandler(ingestUseCase, logger)
 
 	router := http.NewRouter(config, *handler, logger)

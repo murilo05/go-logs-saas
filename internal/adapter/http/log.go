@@ -8,6 +8,7 @@ import (
 	"go-log-saas/internal/core/usecase"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -38,6 +39,7 @@ func (h *Handler) IngestLog(ctx *gin.Context) {
 	}
 
 	ingestion := domain.Ingest{
+		ID:      uuid.New().String(),
 		APIKey:  req.APIKey,
 		AppID:   req.AppID,
 		Level:   req.Level,
@@ -53,15 +55,26 @@ func (h *Handler) IngestLog(ctx *gin.Context) {
 	}
 
 	h.logger.Infow("Log Ingested Successfully", "id", rsp.ID, "status", rsp.Status)
-	response.HandleSuccess(ctx, rsp.ID, rsp.Status)
+	response.HandleSuccess(ctx, rsp.ID, rsp.Status, nil)
 }
 
-func (h *Handler) SearchLog(gin *gin.Context) {
+func (h *Handler) SearchLogById(ctx *gin.Context) {
+	id := ctx.Param("id")
+	if id == "" {
+		h.logger.Error("Error on field check")
+		response.HandleValidationError(ctx, errors.New("invalid log id"))
+		return
+	}
 
-}
+	rsp, err := h.uc.Search(ctx, id)
+	if err != nil {
+		h.logger.Error("UseCase Failed during ingestion")
+		response.HandleError(ctx, err)
+		return
+	}
 
-func (h *Handler) SearchLogById(gin *gin.Context) {
-
+	h.logger.Infow("Log Ingested Successfully", "id", rsp.ID, "status", rsp.Status)
+	response.HandleSuccess(ctx, rsp.ID, rsp.Status, &rsp)
 }
 
 func checkFields(req dto.IngestInput) error {

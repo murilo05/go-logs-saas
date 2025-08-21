@@ -3,6 +3,7 @@ package response
 import (
 	"errors"
 	"go-log-saas/internal/adapter/http/dto"
+	"go-log-saas/internal/core/domain"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -22,12 +23,26 @@ var (
 	ErrForbidden = errors.New("user is forbidden to access the resource")
 )
 
+type IngestResponseOption func(*dto.IngestResponse)
+
+func WithLog(output domain.IngestOutput) IngestResponseOption {
+	return func(r *dto.IngestResponse) {
+		r.Log = dto.Log{AppID: output.Log.AppID, Level: output.Log.Level, Message: output.Log.Message, Context: output.Log.Context}
+	}
+}
+
 // newResponse is a helper function to create a response body
-func newResponse(id string, status string) dto.IngestResponse {
-	return dto.IngestResponse{
+func newResponse(id string, status string, opts ...IngestResponseOption) dto.IngestResponse {
+	resp := dto.IngestResponse{
 		ID:     id,
 		Status: status,
 	}
+
+	for _, opt := range opts {
+		opt(&resp)
+	}
+
+	return resp
 }
 
 // errorStatusMap is a map of defined error messages and their corresponding http status codes
@@ -106,7 +121,12 @@ func newErrorResponse(errMsgs []string) errorResponse {
 }
 
 // handleSuccess sends a success response with the specified status code and optional data
-func HandleSuccess(ctx *gin.Context, id, status string) {
-	rsp := newResponse(id, status)
+func HandleSuccess(ctx *gin.Context, id, status string, output *domain.IngestOutput) {
+	var rsp dto.IngestResponse
+	if output != nil {
+		rsp = newResponse(id, status, WithLog(*output))
+	} else {
+		rsp = newResponse(id, status)
+	}
 	ctx.JSON(http.StatusOK, rsp)
 }
